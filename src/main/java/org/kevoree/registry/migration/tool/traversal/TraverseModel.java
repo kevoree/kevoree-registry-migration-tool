@@ -1,4 +1,4 @@
-package org.kevoree.registry.migration.tool;
+package org.kevoree.registry.migration.tool.traversal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import org.kevoree.TypeDefinition;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 
-public abstract class ProcessModel {
+public abstract class TraverseModel {
 
 	public final void recPackages(final ContainerRoot model) throws UnirestException {
 		for (final Package p : model.getPackages()) {

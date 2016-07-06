@@ -8,6 +8,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.kevoree.registry.migration.tool.service.Migration;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 
