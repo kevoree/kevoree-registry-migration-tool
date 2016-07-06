@@ -15,12 +15,16 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 
 public class SaveTypeDef extends ProcessModel {
 
-	public SaveTypeDef(String accessToken) {
-		super(accessToken);
+	private final String serverPath ;
+	private String accessToken;
+
+	public SaveTypeDef(final String accessToken, final String serverPath) {
+		this.accessToken = accessToken;
+		this.serverPath = serverPath;
 	}
 
 	public void createPackage(final List<String> npackages) throws UnirestException {
-		Unirest.post("http://localhost:8080/api/namespaces").header("Content-Type", "application/json;charset=UTF-8")
+		Unirest.post(serverPath + "/api/namespaces").header("Content-Type", "application/json;charset=UTF-8")
 				.header("Accept", "application/json").header("Authorization", "Bearer " + accessToken)
 				.body(new JSONObject().put("name", StringUtils.join(npackages, '.'))).asJson();
 	}
@@ -34,16 +38,17 @@ public class SaveTypeDef extends ProcessModel {
 				final JSONObject tdJson = new JSONObject().put("name", typeDefinition.getName()).put("version",
 						typeDefinition.getVersion());
 
-				typeDefinition.setDeployUnits((List<? extends DeployUnit>) new ArrayList<>());
+				final List<? extends DeployUnit> arrayList = new ArrayList<>();
+				typeDefinition.setDeployUnits(arrayList);
 				final String serialize = defaultKevoreeFactory.createJSONSerializer().serialize(typeDefinition);
-				Unirest.post("http://localhost:8080/api/namespaces/{namespace}/tdefs")
+				Unirest.post(serverPath + "/api/namespaces/{namespace}/tdefs")
 						.routeParam("namespace", namespace).header("Content-Type", "application/json;charset=UTF-8")
 						.header("Accept", "application/json").header("Authorization", "Bearer " + accessToken)
 						.body(tdJson.put("model", serialize)).asJson();
-			} catch (ClassCastException e) {
+			} catch (final ClassCastException e) {
 				e.printStackTrace();
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			if (!e.getMessage().startsWith("Unresolved")) {
 				throw e;
 			} else {

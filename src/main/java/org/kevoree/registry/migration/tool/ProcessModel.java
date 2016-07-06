@@ -13,11 +13,6 @@ import org.kevoree.TypeDefinition;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 public abstract class ProcessModel {
-	protected final String accessToken;
-
-	public ProcessModel(final String accessToken) {
-		this.accessToken = accessToken;
-	}
 
 	public final void recPackages(final ContainerRoot model) throws UnirestException {
 		for (final Package p : model.getPackages()) {

@@ -1,16 +1,14 @@
 package org.kevoree.registry.migration.tool;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-import org.kevoree.ContainerRoot;
-import org.kevoree.factory.DefaultKevoreeFactory;
-import org.kevoree.factory.KevoreeFactory;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 /**
@@ -20,27 +18,37 @@ public class Application {
 
 	public static void main(final String[] args) throws UnirestException, FileNotFoundException {
 
-		final String login = "admin";
-		final String password = "admin";
-		final HttpResponse<JsonNode> res = Unirest.post("http://localhost:8080/oauth/token")
-				.basicAuth("kevoree_registryapp", "kevoree_registryapp_secret").header("Accept", "application/json")
-				.header("Content-Type", "application/x-www-form-urlencoded")
-				.body("username=" + login + "&password=" + password
-						+ "&grant_type=password&scope=read%20write&client_secret=kevoree_registryapp_secret&client_id=kevoree_registryapp")
-				.asJson();
+		final Options options = new Options();
+		options.addOption("l", "login", true, "New registry login");
+		options.addOption("p", "password", true, "New registry password");
+		options.addOption("s", "server", true, "New registry server url (eg http://host:port)");
+		options.addOption("f", "file", true, "Old registry json model dump");
 
-		System.out.println(res.getBody());
+		final CommandLineParser parser = new DefaultParser();
+		try {
+			final CommandLine res = parser.parse(options, args);
 
-		final String accessToken = res.getBody().getObject().getString("access_token");
+			final String login = getMandatoryValue(res, 'l');
+			final String password = getMandatoryValue(res, 'p');
+			final String serverPath = getMandatoryValue(res, 's');
+			final String filePath = getMandatoryValue(res, 'f');
 
-		final KevoreeFactory kevoreeFactory = new DefaultKevoreeFactory();
+			new Migration().wholeProcess(login, password, serverPath, filePath);
+		} catch (final ParseException e) {
+			System.out.println(e.getMessage());
+			new HelpFormatter().printHelp("registry-migration-tool", options);
+		}
 
-		new SaveTypeDef(accessToken).recPackages((ContainerRoot) kevoreeFactory.createJSONLoader()
-				.loadModelFromStream(new FileInputStream(new File("/tmp/kevoree-registry.json"))).get(0));
+	}
 
-		new SaveDeployUnits(accessToken).recPackages((ContainerRoot) kevoreeFactory.createJSONLoader()
-				.loadModelFromStream(new FileInputStream(new File("/tmp/kevoree-registry.json"))).get(0));
-
+	private static String getMandatoryValue(CommandLine res, char optionValue) throws ParseException {
+		final String login;
+		if (res.getOptionValue(optionValue) != null) {
+			login = res.getOptionValue(optionValue);
+		} else {
+			throw new ParseException("option -" + optionValue + " not defined");
+		}
+		return login;
 	}
 
 }

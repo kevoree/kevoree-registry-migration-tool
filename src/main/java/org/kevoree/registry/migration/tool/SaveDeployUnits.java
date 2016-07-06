@@ -17,8 +17,12 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 
 public class SaveDeployUnits extends ProcessModel {
 
-	public SaveDeployUnits(String accessToken) {
-		super(accessToken);
+	private final String serverPath;
+	private String accessToken;
+
+	public SaveDeployUnits(String accessToken, String serverPath) {
+		this.accessToken = accessToken;
+		this.serverPath = serverPath;
 	}
 
 	@Override
@@ -27,7 +31,7 @@ public class SaveDeployUnits extends ProcessModel {
 		final String platform = deployUnit.getFilters().stream().filter(t -> Objects.equals(t.getName(), "platform"))
 				.map(Value::getValue).findFirst().orElse("");
 		final HttpResponse<JsonNode> res = Unirest
-				.post("http://localhost:8080/api/namespaces/{namespace}/tdefs/{tdefName}/{tdefVersion}/dus")
+				.post(serverPath + "/api/namespaces/{namespace}/tdefs/{tdefName}/{tdefVersion}/dus")
 				.routeParam("namespace", namespace).routeParam("tdefName", tdefName)
 				.routeParam("tdefVersion", tdefVersion).header("Content-Type", "application/json;charset=UTF-8")
 				.header("Accept", "application/json")
